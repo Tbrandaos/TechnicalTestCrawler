@@ -1,0 +1,72 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Crawler";
+}
+
+<h2 class="text-center">Crawler</h2>
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <form method="post" id="searchForm">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="searchTerm" placeholder="Digite o termo de pesquisa">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit">Pesquisar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="results" class="row" style="display: none;">
+    <div class="col-md-6 offset-md-3">
+        <h4>Resultados da pesquisa:</h4>
+        <ul id="resultsList" class="list-group"></ul>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#searchForm').submit(function (event) {
+                event.preventDefault();
+                var searchTerm = $('#searchTerm').val();
+                search(searchTerm);
+            });
+
+            function search(searchTerm) {
+                $.ajax({
+                    url: '@Url.Action("CrawlAndStoreData", "Crawler")',
+                    type: 'POST',
+                    data: JSON.stringify(searchTerm),
+                    contentType: 'application/json',
+                    success: function (data) {
+                        showResults(data);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(error);
+                    }
+                });
+            }
+
+            function showResults(data) {
+                var resultsList = $('#resultsList');
+                resultsList.empty();
+
+                if (data.length === 0) {
+                    resultsList.append('<li class="list-group-item">Nenhum resultado encontrado.</li>');
+                } else {
+                    $.each(data, function (index, item) {
+                        var listItem = '<li class="list-group-item">' +
+                            '<h5>' + item.Title + '</h5>' +
+                            '<p>' + item.Description + '</p>' +
+                            '</li>';
+                        resultsList.append(listItem);
+                    });
+                }
+
+                $('#results').show();
+            }
+        });
+    </script>
+}
